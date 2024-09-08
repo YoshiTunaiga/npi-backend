@@ -49,8 +49,13 @@ app.use(
 app.use(cookieParser());
 
 /* Routes
- * This route will be used by the frontend to fetch data from the NPI API
+ * 1. This route will be used by the frontend to check if the server is running
+ * 2. This route will be used by the frontend to fetch data from the NPI API
  */
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.get("/api/:id", async (req, res) => {
   const { id } = req.params;
 
