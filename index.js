@@ -1,15 +1,56 @@
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
+import express from "express";
+import axios from "axios";
+import dotenv from "dotenv";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON and use CORS
-app.use(express.json());
-app.use(cors());
+/**
+ *  cross-origin configuration
+ *  prevents cross origin error and preflight error
+ */
+import cookieParser from "cookie-parser";
+import cors from "cors";
+const prodOrigins = [];
+const devOrigin = ["http://localhost:5173"];
+const allowedOrigins =
+  process.env.NODE_ENV === "production" ? prodOrigins : devOrigin;
 
-// Route to fetch data from the NPI external API
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (process.env.NODE_ENV === "production") {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`${origin} not allowed by cors`));
+        }
+      } else {
+        callback(null, true);
+      }
+    },
+    optionsSuccessStatus: 200,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
+/**
+ * body-parser configuration for post and put requests
+ * Allows server to receive data from the client
+ * Middleware to parse JSON and use CORS
+ */
+app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+app.use(cookieParser());
+
+/* Routes
+ * This route will be used by the frontend to fetch data from the NPI API
+ */
 app.get("/api/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -36,4 +77,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-module.exports = app;
+export default app;
